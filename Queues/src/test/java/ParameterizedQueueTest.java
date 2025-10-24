@@ -1,3 +1,4 @@
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -37,7 +38,8 @@ public class ParameterizedQueueTest {
         void test_enqueue(String name, Supplier<QueueInterface<Integer>> factory) {
             QueueInterface<Integer> queue = factory.get();
             queue.enqueue(42);
-            // TODO: Add assertions to verify enqueue
+            assertEquals(42, queue.dequeue());
+
         }
 
         @ParameterizedTest(name = "{0} — dequeue")
@@ -46,21 +48,23 @@ public class ParameterizedQueueTest {
             QueueInterface<Integer> queue = factory.get();
             queue.enqueue(99);
             Integer val = queue.dequeue();
-            // TODO: Add assertions to verify dequeue
+            assertEquals(99, val);
         }
 
         @ParameterizedTest(name = "{0} — isFull")
         @MethodSource("ParameterizedQueueTest#queueProviders")
         void test_isFull(String name, Supplier<QueueInterface<Integer>> factory) {
-            QueueInterface<Integer> queue = factory.get();
-            // TODO: Fill queue if possible and assert isFull
+            ArrayBoundedQueue<Integer> queue = new ArrayBoundedQueue<>(2);
+           queue.enqueue(1);
+            queue.enqueue(2);
+            assertTrue(queue.isFull());
         }
 
         @ParameterizedTest(name = "{0} — isEmpty")
         @MethodSource("ParameterizedQueueTest#queueProviders")
         void test_isEmpty(String name, Supplier<QueueInterface<Integer>> factory) {
             QueueInterface<Integer> queue = factory.get();
-            // TODO: verify isEmpty before and after enqueue
+            assertTrue(queue.isEmpty());
         }
 
         @ParameterizedTest(name = "{0} — size")
@@ -81,8 +85,11 @@ public class ParameterizedQueueTest {
         @MethodSource("ParameterizedQueueTest#queueProviders")
         void test_enqueue_dequeue(String name, Supplier<QueueInterface<Integer>> factory) {
             QueueInterface<Integer> queue = factory.get();
-            // TODO: Verify that enqueue(1) makes the queue non-empty,
-            //  dequeue() returns 1, and the queue becomes empty again
+            queue.enqueue(1);
+            assertFalse(queue.isEmpty());
+            int temp = queue.dequeue();
+            assertTrue(queue.isEmpty());
+            assertEquals(1, temp);
         }
 
         @ParameterizedTest(name = "{0} — underflow on empty dequeue")
@@ -100,7 +107,9 @@ public class ParameterizedQueueTest {
         @DisplayName("ArrayBoundedQueue — overflow exception")
         void test_overflow() {
             ArrayBoundedQueue<Integer> queue = new ArrayBoundedQueue<>(2);
-            // TODO: enqueue elements and assert overflow behavior
+            queue.enqueue(1);
+            queue.enqueue(2);
+            assertThrows(QueueOverflowException.class, () -> queue.enqueue(3));
         }
     }
 
@@ -111,7 +120,10 @@ public class ParameterizedQueueTest {
         @DisplayName("LinkedQueue — test specific feature")
         void test_linkedQueueSpecific() {
             LinkedQueue<Integer> queue = new LinkedQueue<>();
-            // TODO: Add LinkedQueue-specific assertions
+            for (int i = 1; i <= 1000; i++) {
+                queue.enqueue(i);
+            }
+            assertFalse(queue.isFull());
         }
         // Add more LinkedQueue-specific tests here
     }
